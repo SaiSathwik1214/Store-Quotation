@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quotation – Sri Rohit Motors & Electricals</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #1a1410;
+    --paper: #fdf8f2;
+    --gold: #b8860b;
+    --gold-light: #e8c84a;
+    --rust: #c0392b;
+    --muted: #7a6e62;
+    --border: #d6cfc4;
+    --surface: #f5efe6;
+    --surface2: #ede5d8;
+    --white: #ffffff;
+    --shadow: rgba(26,20,16,0.12);
+    --radius: 4px;
+    --transition: 0.2s ease;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── TOP NAV ── */
+  .topbar {
+    background: var(--ink);
+    color: var(--gold-light);
+    padding: 10px 20px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .topbar span { opacity: 0.75; }
+  .topbar strong { opacity: 1; color: var(--gold-light); }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--white);
+    border-bottom: 3px solid var(--gold);
+    padding: 28px 32px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+  }
+  .header-inner { max-width: 860px; margin: 0 auto; }
+  .brand-row { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .brand-logo {
+    width: 54px; height: 54px;
+    background: var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: var(--gold-light);
+    flex-shrink: 0;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+  .brand-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 4vw, 26px);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .brand-text .tagline {
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .brand-meta {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .brand-meta a { color: var(--muted); text-decoration: none; }
+  .doc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 6vw, 42px);
+    color: var(--rust);
+    text-align: right;
+    letter-spacing: 0.04em;
+    opacity: 0.9;
+    flex: 1;
+    min-width: 120px;
+    align-self: center;
+  }
+
+  /* ── MAIN WRAPPER ── */
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── FIELDS ── */
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field input, .field textarea, .field select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink);
+    transition: border-color var(--transition), box-shadow var(--transition);
+    width: 100%;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184,134,11,0.12);
+    background: var(--white);
+  }
+  .field textarea { resize: vertical; min-height: 72px; }
+
+  /* Sl No + Date row */
+  .meta-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .meta-row .field { flex: 1; min-width: 140px; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 560px;
+  }
+  thead tr {
+    background: var(--ink);
+    color: var(--gold-light);
+  }
+  thead th {
+    padding: 10px 10px;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--surface2);
+    transition: background var(--transition);
+  }
+  tbody tr:hover { background: var(--surface); }
+  tbody tr:nth-child(even) { background: var(--surface); }
+  tbody tr:nth-child(even):hover { background: var(--surface2); }
+  tbody td { padding: 0; vertical-align: middle; }
+  tbody td input, tbody td select {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 9px 8px;
+    color: var(--ink);
+    transition: background var(--transition);
+  }
+  tbody td input:focus, tbody td select:focus {
+    outline: none;
+    background: rgba(184,134,11,0.07);
+  }
+  .col-sl { width: 40px; text-align: center; color: var(--muted); font-size: 12px; padding: 0 6px; }
+  .col-particulars { min-width: 160px; }
+  .col-unit { width: 90px; }
+  .col-qty { width: 68px; }
+  .col-rate { width: 90px; }
+  .col-amount { width: 100px; background: rgba(184,134,11,0.06); }
+  .col-del { width: 38px; text-align: center; }
+
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 6px;
+    border-radius: 50%;
+    transition: color var(--transition), background var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .del-btn:hover { color: var(--rust); background: rgba(192,57,43,0.08); }
+
+  tfoot td {
+    padding: 10px 10px;
+    font-size: 12px;
+  }
+  .tfoot-note {
+    color: var(--rust);
+    font-size: 11.5px;
+    font-style: italic;
+    font-weight: 500;
+  }
+  .tfoot-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: right;
+    padding-right: 10px;
+  }
+  .tfoot-label {
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: right;
+    padding-right: 4px;
+  }
+  tfoot .total-row { background: var(--surface); }
+  tfoot .total-row td { border-top: 2px solid var(--gold); }
+
+  /* ── ADD ROW ── */
+  .add-row-btn {
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gold);
+    background: none;
+    border: 1.5px dashed var(--gold);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    letter-spacing: 0.04em;
+  }
+  .add-row-btn:hover { background: rgba(184,134,11,0.08); }
+
+  /* ── TERMS ── */
+  .terms-list { list-style: none; padding: 0; }
+  .terms-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .terms-list li::before {
+    content: counter(item, decimal) ".";
+    counter-increment: item;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .terms-list { counter-reset: item; }
+
+  /* ── BANK ── */
+  .bank-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .bank-row { display: flex; flex-direction: column; gap: 2px; }
+  .bank-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .bank-val { font-family: 'DM Mono', monospace; font-size: 13.5px; color: var(--ink); word-break: break-all; }
+  .upi-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .upi-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--ink); color: var(--gold-light);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 4px 12px; border-radius: 20px;
+    margin-right: 8px; margin-bottom: 6px;
+  }
+
+  /* ── ACTIONS ── */
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 28px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow var(--transition), opacity var(--transition);
+    letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--gold-light);
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .btn-primary:hover { box-shadow: 0 4px 16px rgba(26,20,16,0.25); }
+  .btn-secondary {
+    background: var(--white);
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-danger {
+    background: var(--rust);
+    color: #fff;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--ink);
+    color: var(--gold-light);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 9999;
+    letter-spacing: 0.03em;
+    max-width: 280px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── PRINT ── */
+  @media print {
+    .topbar, .add-row-btn, .del-btn, .actions { display: none !important; }
+    .header { border-bottom-color: #000; }
+    .card { box-shadow: none; border-color: #ccc; }
+    body { background: #fff; }
+    table { min-width: unset; }
+    .col-del { display: none; }
+    .field input, .field textarea, tbody td input { border: none; background: transparent; padding: 2px 4px; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .header { padding: 18px 16px 14px; }
+    .card { padding: 16px; }
+    .doc-title { font-size: 28px; }
+    .actions { justify-content: stretch; }
+    .btn { flex: 1; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <strong>Sri Rohit Motors &amp; Electricals</strong>
+  <span>Authorised Dealers · Taro Pumps · Texmo Industries</span>
+</div>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="brand-row">
+      <div class="brand-logo">S</div>
+      <div class="brand-text">
+        <h1>Sri Rohit Motors &amp; Electricals</h1>
+        <div class="tagline">Authorised Dealers — Taro Pumps &nbsp;|&nbsp; Texmo Industries Est. 1956</div>
+        <div class="brand-meta">
+          Plot No. 1, B.N. Reddy Nagar 'X' Road, Nagarjuna Sagar Road, Hyd‑500 070<br/>
+          <a href="mailto:srirohitmotors7570@gmail.com">srirohitmotors7570@gmail.com</a>
+        </div>
+      </div>
+      <div class="doc-title">QUOTATION</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Meta: Sl No & Date -->
+  <div class="card">
+    <div class="card-title">Quotation Details</div>
+    <div class="meta-row">
+      <div class="field">
+        <label>Serial No.</label>
+        <input type="text" id="slNo" placeholder="e.g. Q-2024-001" />
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="qDate" />
+      </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="card-title" style="margin-top:8px;">Customer Info</div>
+    <div class="field-grid">
+      <div class="field" style="grid-column: 1/-1;">
+        <label>Customer Name</label>
+        <input type="text" id="custName" placeholder="Full name" />
+      </div>
+      <div class="field" style="grid-column: 1/-1;">
+        <label>Address</label>
+        <textarea id="custAddr" placeholder="Street, City, PIN…" rows="2"></textarea>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input type="tel" id="custPhone" placeholder="+91 XXXXX XXXXX" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="card">
+    <div class="card-title">Texmo Industries Make — Items</div>
+    <div class="table-wrap">
+      <table id="itemTable">
+        <thead>
+          <tr>
+            <th class="col-sl">#</th>
+            <th class="col-particulars">Particulars</th>
+            <th class="col-unit">Unit</th>
+            <th class="col-qty">Qty</th>
+            <th class="col-rate">Rate (₹)</th>
+            <th class="col-amount">Amount (₹)</th>
+            <th class="col-del"></th>
+          </tr>
+        </thead>
+        <tbody id="itemBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" class="tfoot-note">* Fitting &amp; Transport Charges Extra</td>
+            <td class="tfoot-label">Total</td>
+            <td class="tfoot-total" id="grandTotal">₹0.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="addRow()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Add Item
+    </button>
+  </div>
+
+  <!-- Terms -->
+  <div class="card">
+    <div class="card-title">Terms &amp; Conditions</div>
+    <ul class="terms-list">
+      <li>100% Payment against Delivery</li>
+      <li>Valid for 7 days from the date of quotation</li>
+    </ul>
+  </div>
+
+  <!-- Bank Details -->
+  <div class="card">
+    <div class="card-title">Payment Details</div>
+    <div class="bank-grid">
+      <div class="bank-row">
+        <span class="bank-label">Account Name</span>
+        <span class="bank-val">Sri Rohit Motors &amp; Electrical</span>
+      </div>
+      <div class="bank-row">
+        <span class="bank-label">Account No.</span>
+        <span class="bank-val">112131100000566</span>
+      </div>
+      <div class="bank-row">
+        <span class="bank-label">IFSC Code</span>
+        <span class="bank-val">UBIN0811211</span>
+      </div>
+      <div class="bank-row">
+        <span class="bank-label">Bank</span>
+        <span class="bank-val">Union Bank of India, B.N. Reddy Nagar</span>
+      </div>
+    </div>
+    <div class="upi-row">
+      <span class="upi-tag">📱 PhonePe &amp; GPay</span>
+      <span class="bank-val" style="display:inline;">98491 86536</span>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="resetForm()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7a6 6 0 1 0 1.5-3.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M1 2.5V7H5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Reset
+    </button>
+    <button class="btn btn-secondary" onclick="window.print()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="5" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M4 5V2h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 9h6M4 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Print / PDF
+    </button>
+    <button class="btn btn-primary" onclick="saveQuotation()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h8l2 2v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 2v4h5V2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="4" y="8" width="6" height="4" rx="0.5" stroke="currentColor" stroke-width="1.4"/></svg>
+      Save Quotation
+    </button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Default item templates ──
+const defaultItems = [
+  { particulars: "H.P. Stages Phase",                     unit: "Set",      qty: "", rate: "" },
+  { particulars: "Panel Board 3 Phase / Single",          unit: "No.",      qty: "", rate: "" },
+  { particulars: "Empty PVC Box",                         unit: "No.",      qty: "", rate: "" },
+  { particulars: "Nagarjuna, HDPE Pipes",                 unit: "Kg/Mtrs",  qty: "", rate: "" },
+  { particulars: "Taro Texmo / L&T / ISI 3 Core Cable",  unit: "Mtrs",     qty: "", rate: "" },
+  { particulars: "SS. Nipples, Bolting & Jointing",       unit: "Set",      qty: "", rate: "" },
+  { particulars: "Bush & NRV G.I. Bend & Nipples",        unit: "Set",      qty: "", rate: "" },
+  { particulars: "Clamp Set Nut Bolts & Bore Cover",      unit: "Set",      qty: "", rate: "" },
+  { particulars: "",                                       unit: "",         qty: "", rate: "" },
+  { particulars: "",                                       unit: "",         qty: "", rate: "" },
+];
+
+const unitOptions = ["Set","No.","Kg","Mtrs","Kg/Mtrs","Nos","Pcs","Ltr",""];
+
+let rows = [];
+
+function init() {
+  // Set today's date
+  document.getElementById('qDate').valueAsDate = new Date();
+  // Load saved or defaults
+  const saved = localStorage.getItem('srm_quotation');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      document.getElementById('slNo').value = data.slNo || '';
+      document.getElementById('qDate').value = data.date || '';
+      document.getElementById('custName').value = data.name || '';
+      document.getElementById('custAddr').value = data.addr || '';
+      document.getElementById('custPhone').value = data.phone || '';
+      rows = data.rows || defaultItems.map(i => ({...i}));
+    } catch { rows = defaultItems.map(i => ({...i})); }
+  } else {
+    rows = defaultItems.map(i => ({...i}));
+  }
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('itemBody');
+  tbody.innerHTML = '';
+  rows.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-sl">${idx + 1}</td>
+      <td class="col-particulars">
+        <input type="text" value="${escHtml(row.particulars)}" placeholder="Item description"
+               oninput="updateRow(${idx},'particulars',this.value)" />
+      </td>
+      <td class="col-unit">
+        <select oninput="updateRow(${idx},'unit',this.value)">
+          ${unitOptions.map(u => `<option value="${u}" ${u===row.unit?'selected':''}>${u||'—'}</option>`).join('')}
+        </select>
+      </td>
+      <td class="col-qty">
+        <input type="number" min="0" step="any" value="${row.qty}" placeholder="0"
+               oninput="updateRow(${idx},'qty',this.value)" />
+      </td>
+      <td class="col-rate">
+        <input type="number" min="0" step="0.01" value="${row.rate}" placeholder="0.00"
+               oninput="updateRow(${idx},'rate',this.value)" />
+      </td>
+      <td class="col-amount" style="padding:0 8px;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);font-weight:500;">
+        ${calcAmt(row)}
+      </td>
+      <td class="col-del">
+        <button class="del-btn" onclick="removeRow(${idx})" title="Remove">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M2 2l9 9M11 2l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateTotal();
+}
+
+function calcAmt(row) {
+  const q = parseFloat(row.qty) || 0;
+  const r = parseFloat(row.rate) || 0;
+  const amt = q * r;
+  return amt > 0 ? '₹' + amt.toFixed(2) : '—';
+}
+
+function updateTotal() {
+  const total = rows.reduce((s, r) => {
+    const q = parseFloat(r.qty) || 0;
+    const rate = parseFloat(r.rate) || 0;
+    return s + q * rate;
+  }, 0);
+  document.getElementById('grandTotal').textContent = total > 0 ? '₹' + total.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}) : '₹0.00';
+}
+
+function updateRow(idx, field, val) {
+  rows[idx][field] = val;
+  // Update amount cell inline without full re-render
+  const tbody = document.getElementById('itemBody');
+  const tr = tbody.rows[idx];
+  if (tr) {
+    tr.cells[5].textContent = calcAmt(rows[idx]);
+  }
+  updateTotal();
+}
+
+function addRow() {
+  rows.push({ particulars: "", unit: "", qty: "", rate: "" });
+  renderTable();
+  // Focus new row's particulars
+  const tbody = document.getElementById('itemBody');
+  const last = tbody.rows[tbody.rows.length - 1];
+  if (last) last.querySelector('input')?.focus();
+}
+
+function removeRow(idx) {
+  if (rows.length <= 1) { showToast("At least one row is required"); return; }
+  rows.splice(idx, 1);
+  renderTable();
+}
+
+function resetForm() {
+  if (!confirm("Reset all fields? This will clear your current quotation.")) return;
+  document.getElementById('slNo').value = '';
+  document.getElementById('qDate').valueAsDate = new Date();
+  document.getElementById('custName').value = '';
+  document.getElementById('custAddr').value = '';
+  document.getElementById('custPhone').value = '';
+  rows = defaultItems.map(i => ({...i}));
+  renderTable();
+  localStorage.removeItem('srm_quotation');
+  showToast("Form reset ✓");
+}
+
+function saveQuotation() {
+  const data = {
+    slNo: document.getElementById('slNo').value,
+    date: document.getElementById('qDate').value,
+    name: document.getElementById('custName').value,
+    addr: document.getElementById('custAddr').value,
+    phone: document.getElementById('custPhone').value,
+    rows: rows,
+  };
+  localStorage.setItem('srm_quotation', JSON.stringify(data));
+  showToast("Quotation saved ✓");
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function escHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+init();
+</script>
+</body>
+</html>
