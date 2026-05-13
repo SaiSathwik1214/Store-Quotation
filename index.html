@@ -852,13 +852,13 @@ function buildParticularsCell(row, idx) {
   if (key === 'HP') {
     // "H.P. ___ Stages ___ Phase"
     return `<div class="part-wrap">
-      <input class="part-sub" style="width:52px" value="${esc(sub[0])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:52px" value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter H.P. value"/>
       <span class="part-label">H.P.</span>
-      <input class="part-sub" style="width:52px" value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:52px" value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter Stages value"/>
       <span class="part-label">Stages</span>
-      <input class="part-sub" style="width:52px" value="${esc(sub[2])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:52px" value="${esc(sub[3])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[2]=this.value" title="Enter Phase"/>
       <span class="part-label">Phase</span>
     </div>`;
@@ -867,10 +867,10 @@ function buildParticularsCell(row, idx) {
   if (key === 'HDPE') {
     // "___ HDPE Pipe ___"
     return `<div class="part-wrap">
-      <input class="part-sub" style="width:80px"value="${esc(sub[0])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:80px"value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter size/spec"/>
       <span class="part-label">ISI HDPE Pipe</span>
-      <input class="part-sub" style="width:80px"value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:80px"value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter spec"/>
     </div>`;
   }
@@ -878,10 +878,10 @@ function buildParticularsCell(row, idx) {
   if (key === 'ISI') {
     // "___ ISI 3 Core Flat Cable ___"
     return `<div class="part-wrap">
-      <input class="part-sub" style="width:80px" value="${esc(sub[0])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:80px" value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>
       <span class="part-label">ISI 3 Core Flat Cable</span>
-      <input class="part-sub" style="width:80px" value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:80px" value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter spec"/>
     </div>`;
   }
