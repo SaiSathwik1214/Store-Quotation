@@ -775,6 +775,7 @@ body {
       <div class="bank-row-item"><span>IFCS. Code &nbsp;:</span><span>UBIN0811211</span></div>
       <div class="bank-row-item"><span>Bank Name &nbsp;:</span><span>Union Bank of India, B.N. Reddy Nagar</span></div>
       <div class="bank-row-item"><span>Phone Pay &amp; G.Pay : 98491 86536</span></div>
+      
     </div>
   </div>
 
@@ -816,7 +817,10 @@ function saveSerial(n) {
 }
 
 function init() {
-  document.getElementById('qDate').valueAsDate = new Date();
+  const _today = new Date();
+  const _dd = String(_today.getDate()).padStart(2,'0');
+  const _mm = String(_today.getMonth()+1).padStart(2,'0');
+  document.getElementById('qDate').value = `${_today.getFullYear()}-${_mm}-${_dd}`;
   const saved = localStorage.getItem('srm_v2');
   if (saved) {
     try {
@@ -1061,7 +1065,8 @@ function resetForm() {
   if (!confirm('Reset all fields to default?')) return;
   localStorage.removeItem('srm_v2');
   document.getElementById('slNo').value = getNextSerial();
-  document.getElementById('qDate').valueAsDate=new Date();
+  const _r = new Date();
+  document.getElementById('qDate').value = `${_r.getFullYear()}-${String(_r.getMonth()+1).padStart(2,'0')}-${String(_r.getDate()).padStart(2,'0')}`;
   document.getElementById('custName').value='';
   document.getElementById('custAddr').value='';
   document.getElementById('custPhone').value='';
