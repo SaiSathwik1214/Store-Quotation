@@ -286,6 +286,20 @@ body {
 }
 .date-input:focus { border-bottom-color: #cc0000; }
 
+/* ─── TOTAL DEPTH (MID BLOCK) ─── */
+.cust-mid {
+  width: 150px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-right: 1px solid #222;
+  display: flex;
+  align-items: center;
+}
+.cust-mid .cust-field { margin-bottom: 0; flex-wrap: wrap; }
+.cust-mid .cust-label { white-space: normal; }
+.cust-mid .cust-input { flex: 0 0 56px; width: 56px; }
+.cust-mid { overflow: hidden; }
+
 /* ─── WATERMARK ZONE ─── */
 .watermark-zone {
   position: relative;
@@ -337,7 +351,7 @@ body {
   font-weight: 650;
   color: #cc0000;
   letter-spacing: 0.08em;
-  border-left: none; border-right: none;
+  text-align: center;
 }
 .td-sl { width: 34px; text-align: center; font-size: 15px; font-weight: 800; color: #333; padding: 0 4px !important; }
 .td-particulars { min-width: 160px; }
@@ -466,7 +480,8 @@ body {
   align-items: center;
   padding: 5px 10px;
   gap: 8px;
-  min-width: 220px;
+  flex: 0 0 220px;
+  width: 220px;
 }
 .total-label { font-weight: 800; font-size: 17px; white-space: nowrap; }
 .total-val {
@@ -484,7 +499,7 @@ body {
   border-top: 1px solid #222;
 }
 .terms-col {
-  flex: 1;
+  flex: 0.8;
   padding: 8px 10px;
   border-right: 1px solid #222;
 }
@@ -503,7 +518,8 @@ body {
 }
 
 .bank-col {
-  flex: 1;
+  flex: 0 0 248px;
+  width: 248px;
   padding: 8px 10px;
 }
 .bank-col .bank-name {
@@ -520,6 +536,36 @@ body {
   gap: 4px;
 }
 .bank-row-item span:first-child { font-weight: 600; white-space: nowrap; }
+
+/* ─── QR PAYMENT BLOCK ─── */
+.qr-col {
+  flex: 1.4;
+  padding: 10px 8px;
+  border-right: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.qr-col .qr-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+.qr-col img {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  margin-bottom: 6px;
+}
+.qr-col .qr-upi {
+  font-size: 12px;
+  font-weight: 600;
+  word-break: break-all;
+  line-height: 1.3;
+}
 
 /* ─── BOTTOM UPI ─── */
 .upi-bar {
@@ -573,8 +619,13 @@ body {
   .taro-text { font-size: 12px; }
   .texmo-text { font-size: 13px; }
   .cust-right { width: 140px; }
+  .cust-mid { width: 110px; padding: 6px 6px; }
+  .cust-mid .cust-input { flex: 0 0 44px; width: 44px; }
+  .qr-col { padding: 6px 6px; }
+  .qr-col img { width: 90px; height: 90px; }
   .sl-val { font-size: 16px; }
-  .total-box { min-width: 160px; }
+  .total-box { flex: 0 0 160px; width: 160px; }
+  .bank-col { flex: 0 0 188px; width: 188px; }
   .tbtn { font-size: 12px; padding: 7px 14px; }
   .items-table th, .cell-input, .cell-amt { font-size: 11px; }
   .td-rate { width: 58px; }
@@ -586,6 +637,10 @@ body {
   .warranty-stamp { display: none; }
   .bottom-section { flex-direction: column; }
   .terms-col { border-right: none; border-bottom: 1px solid #222; }
+  .qr-col { border-right: none; border-bottom: 1px solid #222; padding: 10px; }
+  .cust-row { flex-wrap: wrap; }
+  .cust-mid { border-right: none; border-top: 1px solid #222; width: 100%; }
+  .bank-col { width: auto; flex: 1 1 auto; }
 }
 
 /* ─── PRINT ─── */
@@ -673,7 +728,9 @@ body {
       <div class="company-addr">
         Plot No. 1, B.N. Reddy Nagar 'X' Road,<br/>
         Nagarjuna Sagar Road, HYD-500 070.<br/>
-        E-mail : srirohitmotors7570@gmail.com
+        E-mail : srirohitmotors7570@gmail.com<br/>
+        GSTIN : 36ASPPK9793H2ZT<br/>
+        State: Telangana State Code:36
       </div>
     </div>
     <div class="company-auth">Authorised dealers for :</div>
@@ -698,6 +755,12 @@ body {
       <div class="cust-field">
         <span class="cust-label">Phone</span>
         <input class="cust-input" id="custPhone" type="tel" placeholder="Phone number" autocomplete="off"/>
+      </div>
+    </div>
+    <div class="cust-mid">
+      <div class="cust-field">
+        <span class="cust-label">Depth :</span>
+        <input class="cust-input" id="depthVal" type="text" placeholder="Depth" autocomplete="off"/>
       </div>
     </div>
     <div class="cust-right">
@@ -730,13 +793,7 @@ body {
       <!-- Section label -->
        
       <tr class="section-label">
-        <td></td>
-        <td colspan="1" style="border-left:1px solid #222;">TEXMO INDUSTRIES MAKE</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td colspan="1" style="border-right:1px solid #222;"></td>
-        <!-- <td style="border:none;background:#fff;"></td> -->
+        <td colspan="7">TEXMO INDUSTRIES MAKE</td>
       </tr>
     </tbody>
   </table>
@@ -768,6 +825,11 @@ body {
         <li>100% Payment against Delivery</li>
         <li>Valid From 7 days</li>
       </ol>
+    </div>
+    <div class="qr-col">
+      <div class="qr-title">SCAN &amp; PAY</div>
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAADUUlEQVR4nO2c0Y3bMAyGP9YG8qgAN8CNYm/QkYqO1A3sUW6AAvJjABvsA0XZQYsC17RpTqEeDCv2h1iIQv4kJYvy7jZ/ej8DAQUU0AeFFiltZBPm8yYyAjIuIiJnYJYev6m/9+MFdF8I1dypqqoy5M4OqroCaUUnOtUpqTKoqt08PfiYArodKv/9dBH9+noRZjmpTsvJRcbSY7Zk/C+PF9Adof6q1ynD20llyC9Ayggp/6VvCugDQksVE68XKZbh33xTQA8L2Y9evENae2UBoFOBTXT+vPV+VcGuPviYAroFQjX7aVWWvzyUFsqycagv/31rFwFA53OHmutIF7Huf3m8gO4OWfRZTIGuWKRJUtUprYfYtASeScNGtA31wCbKsomynO3Doh4s+txEAYS0ItCvDz+mgG6Bio2wllYYMjBoOVPVFTMRk90TOqJxyH7ucpbLFLB0pWYw1zHhriO8RvOQ6wibFm4thnx1j11NkcV+BoiDbFQvaZihsApHpsyIwYxH2IjGoeI1hlrpgjI3vOZV5ovfHzaicci1Ywad4KgiLRgFdyKpxKYxI5qGDh7CgouahShRR96lhqcnYka0DB0yVMUApD3SvFo9QVK/78HHFNAtELuotP4edVSjcDAeU+iI1iGPNSyBvXpckav/qD7Fok8NHdE4VPNSNdbYBeQ+I/wQNqJ9yMWizwPXk93VWc1HhI5oHqrLpDoVkp2twEUUygKaojCWF40VM+1DtZChHlJA7a5VT4ayfBroUN207kRVkdmv7msmIh/RPOQ2gmOu6mAZ9nrooDEjngHy9RF7+gnfwVPj0IO8jLpG81Cta3TXbqKqB46uI+oa7UOHyVC66hJi8mUzvlwi1lk+CZRqrJE7lZFNyrWlh/kMlAo5yJe32AncOHS1X2MvaXixc9cWexU0bETTUE9JSYHAVpZmz7YdGCD5Hg5LTqX1ro8X0N0hy1mKTQtfnS9wUiF9tw1+ynIWoFuZxy5W5z8RtGclwRyGjEvPnrCSMWxE61Ddr/HTHs9DMrOICSKL/QTQ9d7wiyhchOHbGY84trJffMgvK/Y6iQcfU0C3Qpu9YQqWk8oIFnOq6oqMgIxsIrK/U+IDjCmgP4Uk3l4YUEAB/ab9ADx1NqOUKok5AAAAAElFTkSuQmCC" alt="UPI QR Code"/>
+      <div class="qr-upi">UPI ID: 65369202@ubin</div>
     </div>
     <div class="bank-col">
       <div class="bank-name">Sri Rohit Motors &amp; Electrical</div>
@@ -830,6 +892,7 @@ function init() {
       document.getElementById('custName').value = d.name  || '';
       document.getElementById('custAddr').value = d.addr  || '';
       document.getElementById('custPhone').value= d.phone || '';
+      document.getElementById('depthVal').value = d.depth || '';
       rows = d.rows || DEFAULT_ITEMS.map(x=>({...x}));
     } catch { rows = DEFAULT_ITEMS.map(x=>({...x})); }
   } else {
@@ -992,6 +1055,7 @@ async function saveForm() {
     name,
     addr:  document.getElementById('custAddr').value,
     phone,
+    depth: document.getElementById('depthVal').value,
     rows
   };
   localStorage.setItem('srm_v2', JSON.stringify(d));
@@ -1070,6 +1134,7 @@ function resetForm() {
   document.getElementById('custName').value='';
   document.getElementById('custAddr').value='';
   document.getElementById('custPhone').value='';
+  document.getElementById('depthVal').value='';
   rows = DEFAULT_ITEMS.map(x=>({...x}));
   renderRows();
   toast('Reset ✓');
