@@ -288,7 +288,7 @@ body {
 
 /* ─── TOTAL DEPTH (MID BLOCK) ─── */
 .cust-mid {
-  width: 150px;
+  width: 170px;
   flex-shrink: 0;
   padding: 6px 10px;
   border-right: 1px solid #222;
@@ -307,7 +307,7 @@ body {
 .watermark-zone::before {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 55%;
@@ -354,12 +354,12 @@ body {
   text-align: center;
 }
 .td-sl { width: 34px; text-align: center; font-size: 15px; font-weight: 800; color: #333; padding: 0 4px !important; }
-.td-particulars { min-width: 160px; }
+.td-particulars { width: 548px; }
 .td-unit { width: 56px; text-align: center; }
 .td-qty  { width: 52px; text-align: center; }
 .td-rate { width: 72px; text-align: center; }
 .td-amt  { width: 80px; text-align: center; }
-.td-del  { width: 28px; text-align: center; }
+
 
 .cell-input {
   width: 100%;
@@ -450,13 +450,13 @@ body {
 }
 .unit-select:focus { background: #fffbf0; }
 
-.del-btn {
+/* .del-btn {
   background: none; border: none; cursor: pointer;
   color: #aaa; font-size: 14px; padding: 4px;
   display: flex; align-items: center; justify-content: center;
   transition: color 0.15s;
 }
-.del-btn:hover { color: #cc0000; }
+.del-btn:hover { color: #cc0000; } */
 
 /* empty rows */
 .empty-rows td { height: 26px; border: 1px solid #222; }
@@ -653,7 +653,7 @@ body {
     print-color-adjust: exact !important;
   }
   .cell-input, .unit-select, .cust-input, .sl-val, .date-input {
-    border-bottom-color: transparent !important;
+    border-bottom-color: black !important;
     background: transparent !important;
   }
   .cell-input:focus, .unit-select:focus, .cust-input:focus { background: transparent !important; }
@@ -731,6 +731,7 @@ body {
         E-mail : srirohitmotors7570@gmail.com<br/>
         <strong> GSTIN : 36ASPPK9793H2ZT<br/>
         State: Telangana </strong> <span style="margin-left: 6px;">State Code: 36</span>
+        
       </div>
     </div>
     <div class="company-auth">Authorised dealers for :</div>
@@ -759,8 +760,10 @@ body {
     </div>
     <div class="cust-mid">
       <div class="cust-field">
-        <span class="cust-label">Depth :</span>
-        <input class="cust-input" id="depthVal" type="text" placeholder="Depth" autocomplete="off"/>
+        <span class="cust-label">Total Feet :</span>
+        <input class="cust-input" id="depthVal" type="text" placeholder="" autocomplete="off"/><br/>
+        <span class="cust-label">Quoted Feet :</span>
+        <input class="cust-input" id="depthVal" type="text" placeholder="" autocomplete="off"/><br/>
       </div>
     </div>
     <div class="cust-right">
@@ -786,7 +789,7 @@ body {
         <th class="td-qty">Qty.</th>
         <th class="td-rate">Rate</th>
         <th class="td-amt">Amount</th>
-        <th class="td-del" style="border:none;background:transparent;"></th>
+        <!-- <th class="td-del" style="border:none;background:transparent;"></th> -->
       </tr>
     </thead>
     <tbody id="itemBody">
@@ -799,12 +802,12 @@ body {
   </table>
 
   <!-- ADD ROW -->
-  <div class="add-row-wrap">
+  <!-- <div class="add-row-wrap">
     <button class="add-row-btn" onclick="addRow()">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       Add Item
     </button>
-  </div>
+  </div> -->
 
   <!-- FITTING NOTE + TOTAL -->
   <div class="footer-strip">
@@ -861,8 +864,7 @@ const DEFAULT_ITEMS = [
   { p: "SS.Nipples, Bolting & Jointing",   u: "Set",  q: "", r: "" },
   { p: "Bush & NRV G.I. Bend & Nipples",   u: "Set", q: "", r: "" },
   { p: "Clamp Set Nut Bolts & Bore Cover", u: "Set",  q: "", r: "" },
-  { p: "", u: "", q: "", r: "" },
-  { p: "", u: "", q: "", r: "" },
+
 ];
 
 const UNITS = ["","Set","No.","No","Kg","Sqm","Mtrs","Kg/Mtrs","Nos","Pcs","Ltr"];
@@ -991,9 +993,7 @@ function renderRows() {
       <td class="td-amt">
         <div class="cell-amt" id="amt_${i}">${fmtAmt(row)}</div>
       </td>
-      <td class="td-del">
-        <button class="del-btn" onclick="removeRow(${i})" title="Remove">✕</button>
-      </td>
+
     `;
     tbody.appendChild(tr);
   });
@@ -1020,20 +1020,20 @@ function updateTotal() {
     t>0 ? '₹'+t.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
 }
 
-function addRow() {
-  rows.push({p:'',u:'',q:'',r:''});
-  renderRows();
-  // focus last particulars input
-  const tbody = document.getElementById('itemBody');
-  const last = tbody.lastElementChild;
-  if (last) last.querySelector('input')?.focus();
-}
+// function addRow() {
+//   rows.push({p:'',u:'',q:'',r:''});
+//   renderRows();
+//   // focus last particulars input
+//   const tbody = document.getElementById('itemBody');
+//   const last = tbody.lastElementChild;
+//   if (last) last.querySelector('input')?.focus();
+// }
 
-function removeRow(i) {
-  if (rows.length<=1){ toast('At least one row required'); return; }
-  rows.splice(i,1);
-  renderRows();
-}
+// function removeRow(i) {
+//   if (rows.length<=1){ toast('At least one row required'); return; }
+//   rows.splice(i,1);
+//   renderRows();
+// }
 
 async function saveForm() {
   const name  = document.getElementById('custName').value.trim();
@@ -1079,8 +1079,8 @@ async function saveForm() {
 
     // Hide UI-only elements for clean PDF
     const toolbar   = document.querySelector('.toolbar');
-    const addRowDiv = document.querySelector('.add-row-wrap');
-    const delBtns   = document.querySelectorAll('.del-btn, .td-del');
+    // const addRowDiv = document.querySelector('.add-row-wrap');
+    // const delBtns   = document.querySelectorAll('.del-btn, .td-del');
     toolbar.style.display   = 'none';
     addRowDiv.style.display = 'none';
     delBtns.forEach(el => el.style.visibility = 'hidden');
