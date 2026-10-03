@@ -886,41 +886,126 @@ const UNITS = ["","Set","No.","No","Kg","Sqm","Mtrs","Kg/Mtrs","Nos","Pcs","Ltr"
 
 let rows = [];
 
-// ── Serial number helpers ──
-function getNextSerial() {
-  const last = parseInt(localStorage.getItem('srm_last_serial') || '0', 10);
-  return last + 1;
-}
-function saveSerial(n) {
-  localStorage.setItem('srm_last_serial', String(n));
+// ══════════ BACKEND CONNECTION ══════════
+// After deploying the backend, put its URL here (no trailing slash)
+const API_BASE = 'https://YOUR-BACKEND-URL';
+
+const byId = id => document.getElementById(id);
+
+function getApiKey() {
+  let k = localStorage.getItem('srm_api_key');
+  if (!k) {
+    k = (prompt('Enter the access key for the quotation database:') || '').trim();
+    if (k) localStorage.setItem('srm_api_key', k);
+  }
+  return k;
 }
 
-function init() {
-  const _today = new Date();
-  const _dd = String(_today.getDate()).padStart(2,'0');
-  const _mm = String(_today.getMonth()+1).padStart(2,'0');
-  document.getElementById('qDate').value = `${_today.getFullYear()}-${_mm}-${_dd}`;
-  const saved = localStorage.getItem('srm_v2');
-  if (saved) {
-    try {
-      const d = JSON.parse(saved);
-      document.getElementById('slNo').value     = d.slNo  || '';
-      document.getElementById('qDate').value    = d.date  || '';
-      document.getElementById('custName').value = d.name  || '';
-      document.getElementById('custAddr').value = d.addr  || '';
-      document.getElementById('custPhone').value= d.phone || '';
-      document.getElementById('depthVal').value = d.depth || '';
-      rows = d.rows || DEFAULT_ITEMS.map(x=>({...x}));
-    } catch { rows = DEFAULT_ITEMS.map(x=>({...x})); }
-  } else {
-    rows = DEFAULT_ITEMS.map(x=>({...x}));
+async function api(path, opts = {}) {
+  let res;
+  try {
+    res = await fetch(API_BASE + path, {
+      ...opts,
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), ...(opts.headers || {}) }
+    });
+  } catch {
+    throw Object.assign(new Error('Cannot reach the server'), { status: 0 });
   }
+  const body = await res.json().catch(() => null);
+  if (res.status === 401) localStorage.removeItem('srm_api_key');   // ask for the key again next time
+  if (!res.ok) throw Object.assign(new Error((body && body.error) || 'Server error'), { status: res.status });
+  return body;
+}
 
-  // Always auto-assign serial if field is empty (works on any device)
-  if (!document.getElementById('slNo').value.trim()) {
-    document.getElementById('slNo').value = getNextSerial();
-  }
+let loadedSerial = null;   // Sl.No. of the record currently loaded from the database (null = new quotation)
+let shownSerial  = null;   // last Sl.No. shown in the field
+let dirty = false;         // unsaved edits on the page
+
+function todayStr() {
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+
+// Fresh copy of rows; guarantees every SPLIT row has its 3-slot "sub" array
+function normalizeRows(list) {
+  return (Array.isArray(list) && list.length ? list : DEFAULT_ITEMS).map(x => {
+    const r = { p: x.p || '', u: x.u || '', q: x.q ?? '', r: x.r ?? '' };
+    if (r.p.startsWith('SPLIT:')) {
+      const s = Array.isArray(x.sub) ? x.sub : [];
+      r.sub = [s[0] || '', s[1] || '', s[2] || ''];
+    }
+    return r;
+  });
+}
+
+function collectForm() {
+  return {
+    slNo:       parseInt(byId('slNo').value, 10),
+    date:       byId('qDate').value,
+    name:       byId('custName').value.trim(),
+    addr:       byId('custAddr').value.trim(),
+    phone:      byId('custPhone').value.trim().replace(/\s+/g, ''),
+    totalFeet:  byId('depthVal').value,
+    quotedFeet: byId('quotedVal').value,
+    items:      rows
+  };
+}
+
+function fillForm(d) {
+  byId('slNo').value      = d.slNo;
+  byId('qDate').value     = d.date || todayStr();
+  byId('custName').value  = d.name || '';
+  byId('custAddr').value  = d.addr || '';
+  byId('custPhone').value = d.phone || '';
+  byId('depthVal').value  = d.totalFeet || '';
+  byId('quotedVal').value = d.quotedFeet || '';
+  rows = normalizeRows(d.items);
   renderRows();
+  shownSerial = d.slNo;
+  dirty = false;
+}
+
+async function assignNextSerial() {
+  const { nextSerial } = await api('/api/quotations/next-serial');
+  byId('slNo').value = nextSerial;
+  shownSerial = nextSerial;
+  loadedSerial = null;
+}
+
+// Typing a Sl.No. and leaving the box (Tab / Enter) loads that quotation if it exists
+async function onSlNoChange() {
+  const n = parseInt(byId('slNo').value, 10);
+  if (!(n >= 1)) { toast('⚠️ Enter a valid Sl.No.'); byId('slNo').value = shownSerial ?? ''; return; }
+  if (n === loadedSerial) return;
+  try {
+    const rec = await api('/api/quotations/' + n);
+    if (dirty && !confirm(`Load quotation #${n}? Unsaved entries on this page will be replaced.`)) {
+      byId('slNo').value = shownSerial ?? '';
+      return;
+    }
+    fillForm(rec);
+    loadedSerial = n;
+    toast(`📂 Quotation #${n} loaded`);
+  } catch (e) {
+    if (e.status === 404) { loadedSerial = null; shownSerial = n; toast(`New quotation #${n}`); }
+    else toast('❌ ' + e.message);
+  }
+}
+
+async function init() {
+  byId('qDate').value = todayStr();
+  rows = normalizeRows(DEFAULT_ITEMS);
+  renderRows();
+
+  byId('slNo').addEventListener('change', onSlNoChange);
+  const paper = document.querySelector('.paper');
+  const markDirty = e => { if (e.target.id !== 'slNo') dirty = true; };
+  paper.addEventListener('input', markDirty);
+  paper.addEventListener('change', markDirty);
+
+  toast('Connecting to database…');
+  try { await assignNextSerial(); }
+  catch (e) { toast('❌ ' + e.message); }
 }
 
 // ── Build particulars cell: normal input OR inline split-field ──
@@ -937,13 +1022,13 @@ function buildParticularsCell(row, idx) {
   if (key === 'HP') {
     // "H.P. ___ Stages ___ Phase"
     return `<div class="part-wrap">
-      <input class="part-sub" style="width:52px" value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:52px" value="${esc(sub[0])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter H.P. value"/>
       <span class="part-label">H.P.</span>
-      <input class="part-sub" style="width:52px" value="${esc(sub[2])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:52px" value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter Stages value"/>
       <span class="part-label">Stages</span>
-      <input class="part-sub" style="width:52px" value="${esc(sub[3])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:52px" value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[2]=this.value" title="Enter Phase"/>
       <span class="part-label">Phase</span>
     </div>`;
@@ -952,13 +1037,13 @@ function buildParticularsCell(row, idx) {
   if (key === 'HDPE') {
     // "___ HDPE Pipe ___"
     return `<div class="part-wrap">
-      <input class="part-sub" style="width:90px"value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:90px"value="${esc(sub[0])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter size/spec"/>
       <span class="part-label">ISI HDPE Pipe</span>
-      <input class="part-sub" style="width:100px"value="${esc(sub[2])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:100px"value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter spec"/>
       <span class="part-label">Size</span>
-      <input class="part-sub" style="width:90px"value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:90px"value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[2]=this.value" title="Enter size/spec"/>
       <span class="part-label">Kg</span>       
     </div>`;
@@ -967,10 +1052,10 @@ function buildParticularsCell(row, idx) {
   if (key === 'ISI') {
     // "___ ISI 3 Core Flat Cable ___"
     return `<div class="part-wrap">
-      <input class="part-sub" style="width:90px" value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:90px" value="${esc(sub[0])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>
       <span class="part-label">ISI 3 Core Flat Cable</span>
-      <input class="part-sub" style="width:80px" value="${esc(sub[2])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:80px" value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter spec"/>
       <span class="part-label">sqm</span>
     </div>`;
@@ -979,7 +1064,7 @@ function buildParticularsCell(row, idx) {
   if(key === 'PANEL'){
     return `<div class="part-wrap">
       <span class="part-label">Panel Board</span>
-      <input class="part-sub" style="width:90px" value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:90px" value="${esc(sub[0])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>`;
   }
 
@@ -1061,38 +1146,48 @@ function updateTotal() {
 // }
 
 async function saveForm() {
-  const name  = document.getElementById('custName').value.trim();
-  const phone = document.getElementById('custPhone').value.trim().replace(/\s+/g,'');
-  const slNo  = document.getElementById('slNo').value.trim();
+  const d = collectForm();
+  if (!d.name)        { toast('⚠️ Enter customer name before saving'); return; }
+  if (!d.phone)       { toast('⚠️ Enter phone number before saving'); return; }
+  if (!(d.slNo >= 1)) { toast('⚠️ Enter a valid Sl.No.'); return; }
 
-  if (!name)  { toast('⚠️ Enter customer name before saving'); return; }
-  if (!phone) { toast('⚠️ Enter phone number before saving'); return; }
-
-  // Build safe filename:  CustomerName_PhoneNumber.pdf
-  const safeName  = name.replace(/[^a-zA-Z0-9\u0C00-\u0C7F ]/g,'').trim().replace(/\s+/g,'_');
-  const safePhone = phone.replace(/[^0-9+]/g,'');
-  const fileName  = `${safeName}_${safePhone}.pdf`;
-
-  // Also persist form state
-  const d = {
-    slNo,
-    date:  document.getElementById('qDate').value,
-    name,
-    addr:  document.getElementById('custAddr').value,
-    phone,
-    depth: document.getElementById('depthVal').value,
-    rows
-  };
-  localStorage.setItem('srm_v2', JSON.stringify(d));
-
-  // ── Show saving indicator ──
   const btn = document.querySelector('.tbtn-save');
   const orig = btn.innerHTML;
   btn.disabled = true;
+  btn.innerHTML = '⏳ Saving...';
+
+  // ── 1) Save to the database ──
+  try {
+    if (loadedSerial === d.slNo) {
+      await api('/api/quotations/' + d.slNo, { method: 'PUT', body: JSON.stringify(d) });
+    } else {
+      await api('/api/quotations', { method: 'POST', body: JSON.stringify(d) });
+      loadedSerial = d.slNo;
+    }
+    shownSerial = d.slNo;
+    dirty = false;
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+    if (e.status === 409) {   // number taken meanwhile (e.g. another device)
+      try {
+        await assignNextSerial();
+        toast(`⚠️ Sl.No. ${d.slNo} was already used — new number ${byId('slNo').value} assigned. Click Save again.`);
+        return;
+      } catch {}
+    }
+    toast('❌ Not saved: ' + e.message);
+    return;
+  }
+
+  // ── 2) Generate the PDF (same as before) ──
+  const safeName  = d.name.replace(/[^a-zA-Z0-9\u0C00-\u0C7F ]/g,'').trim().replace(/\s+/g,'_');
+  const safePhone = d.phone.replace(/[^0-9+]/g,'');
+  const fileName  = `${safeName}_${safePhone}.pdf`;
+  const toolbar   = document.querySelector('.toolbar');
   btn.innerHTML = '⏳ Saving PDF...';
 
   try {
-    // Load html2pdf if needed
     if (!window.html2pdf) {
       await new Promise((res, rej) => {
         const s = document.createElement('script');
@@ -1101,16 +1196,7 @@ async function saveForm() {
         document.head.appendChild(s);
       });
     }
-
-    // Hide UI-only elements for clean PDF
-    const toolbar   = document.querySelector('.toolbar');
-    // const addRowDiv = document.querySelector('.add-row-wrap');
-    // const delBtns   = document.querySelectorAll('.del-btn, .td-del');
-    toolbar.style.display   = 'none';
-    addRowDiv.style.display = 'none';
-    delBtns.forEach(el => el.style.visibility = 'hidden');
-
-    const element = document.querySelector('.paper');
+    toolbar.style.display = 'none';
 
     await html2pdf().set({
       margin:      [6, 6, 6, 6],
@@ -1118,51 +1204,30 @@ async function saveForm() {
       image:       { type: 'jpeg', quality: 0.97 },
       html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
       jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    }).from(element).save();
+    }).from(document.querySelector('.paper')).save();
 
-    // Restore hidden elements
-    toolbar.style.display   = '';
-    addRowDiv.style.display = '';
-    delBtns.forEach(el => el.style.visibility = '');
-
-    // Auto-increment serial for next quotation
-    const currentSerial = parseInt(slNo) || getNextSerial();
-    saveSerial(currentSerial);
-
-    btn.disabled = false;
-    btn.innerHTML = orig;
-
-    toast(`✅ Saved as "${fileName}" — move it to D:\\Quotations`);
-
-    // After 3s show reminder to move the file
-    setTimeout(() => {
-      toast('📁 Remember: Move the PDF from Downloads → D:\\Quotations');
-    }, 3500);
-
-  } catch(err) {
+    toast(`✅ Quotation #${d.slNo} saved & PDF "${fileName}" — move it to D:\\Quotations`);
+    setTimeout(() => toast('📁 Remember: Move the PDF from Downloads → D:\\Quotations'), 3500);
+  } catch (err) {
     console.error(err);
-    document.querySelector('.toolbar').style.display = '';
-    document.querySelector('.add-row-wrap').style.display = '';
-    document.querySelectorAll('.del-btn, .td-del').forEach(el => el.style.visibility = '');
+    toast('✅ Saved to database, but the PDF failed. Try Print instead.');
+  } finally {
+    toolbar.style.display = '';
     btn.disabled = false;
     btn.innerHTML = orig;
-    toast('❌ Could not generate PDF. Try Print instead.');
   }
 }
 
-function resetForm() {
+async function resetForm() {
   if (!confirm('Reset all fields to default?')) return;
-  localStorage.removeItem('srm_v2');
-  document.getElementById('slNo').value = getNextSerial();
-  const _r = new Date();
-  document.getElementById('qDate').value = `${_r.getFullYear()}-${String(_r.getMonth()+1).padStart(2,'0')}-${String(_r.getDate()).padStart(2,'0')}`;
-  document.getElementById('custName').value='';
-  document.getElementById('custAddr').value='';
-  document.getElementById('custPhone').value='';
-  document.getElementById('depthVal').value='';
-  rows = DEFAULT_ITEMS.map(x=>({...x}));
+  ['custName','custAddr','custPhone','depthVal','quotedVal'].forEach(id => { byId(id).value = ''; });
+  byId('qDate').value = todayStr();
+  rows = normalizeRows(DEFAULT_ITEMS);
   renderRows();
-  toast('Reset ✓');
+  loadedSerial = null;
+  dirty = false;
+  try { await assignNextSerial(); toast('Reset ✓'); }
+  catch (e) { byId('slNo').value = ''; toast('❌ ' + e.message); }
 }
 
 function toast(msg) {
