@@ -119,6 +119,57 @@ body {
 .wa-modal .wa-send:hover { background: #1ebe5d; }
 .wa-modal .wa-send:disabled { background: #aaa; cursor: not-allowed; }
 
+/* ─── FIND MODAL ─── */
+.tbtn-find { background: #1d4ed8; color: #fff; }
+.find-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 10000;
+  align-items: center; justify-content: center;
+}
+.find-overlay.open { display: flex; }
+.find-modal {
+  background: #fff; border-radius: 10px; padding: 22px 20px 18px;
+  width: 94%; max-width: 600px; max-height: 86vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  font-family: 'Source Sans 3', sans-serif;
+  animation: popIn 0.2s ease;
+}
+.find-modal h3 { font-size: 16px; font-weight: 700; color: #111; margin-bottom: 12px; }
+.find-search, .find-date {
+  border: 1.5px solid #ccc; border-radius: 6px;
+  font-family: 'Source Sans 3', sans-serif; outline: none; color: #111;
+}
+.find-search { width: 100%; padding: 9px 12px; font-size: 14px; margin-bottom: 10px; }
+.find-search:focus, .find-date:focus { border-color: #1d4ed8; }
+.find-dates { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+.find-dates label { font-size: 11.5px; color: #555; font-weight: 600; display: flex; flex-direction: column; gap: 3px; }
+.find-date { padding: 7px 8px; font-size: 13px; }
+.find-clear {
+  padding: 8px 14px; border: 1.5px solid #ddd; border-radius: 6px; background: #fff; color: #555;
+  font-family: 'Source Sans 3', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.find-list { flex: 1; overflow-y: auto; border: 1px solid #e3e3e3; border-radius: 6px; min-height: 120px; }
+.find-item {
+  display: flex; gap: 10px; align-items: center; padding: 9px 12px;
+  border-bottom: 1px solid #eee; cursor: pointer; font-size: 13.5px; color: #111;
+}
+.find-item:last-child { border-bottom: none; }
+.find-item:hover { background: #f1f5ff; }
+.find-sl { font-weight: 800; color: #cc0000; min-width: 44px; }
+.find-main { flex: 1; min-width: 0; }
+.find-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.find-sub { font-size: 12px; color: #666; }
+.find-amt { font-weight: 700; white-space: nowrap; }
+.find-empty { padding: 22px 12px; text-align: center; color: #888; font-size: 13px; }
+.find-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
+.find-more, .find-close {
+  padding: 9px 16px; border-radius: 6px; font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.find-more  { border: 1.5px solid #1d4ed8; background: #fff; color: #1d4ed8; }
+.find-close { border: 1.5px solid #ddd; background: #fff; color: #555; margin-left: auto; }
+
 /* ─── QUOTATION PAPER ─── */
 .paper {
   width: 100%;
@@ -674,6 +725,10 @@ body {
 
 <!-- TOOLBAR -->
 <div class="toolbar">
+  <button class="tbtn tbtn-find" onclick="openFindModal()">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M8.7 8.7 12 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    Find
+  </button>
   <button class="tbtn tbtn-reset" onclick="resetForm()">
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 6.5A5.5 5.5 0 1 0 2.4 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M1 1.5v2h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Reset
@@ -710,6 +765,25 @@ body {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
         Send on WhatsApp
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- FIND MODAL -->
+<div class="find-overlay" id="findOverlay" onclick="closeFindModal(event)">
+  <div class="find-modal">
+    <h3>Find Quotation</h3>
+    <input class="find-search" id="findQ" type="text" placeholder="Search by customer name, phone or Sl.No." autocomplete="off"
+           oninput="findDebounce()" onkeydown="if(event.key==='Enter'){runFind(true)}"/>
+    <div class="find-dates">
+      <label>From date<input class="find-date" id="findFrom" type="date" onchange="runFind(true)"/></label>
+      <label>To date<input class="find-date" id="findTo" type="date" onchange="runFind(true)"/></label>
+      <button class="find-clear" onclick="clearFind()">Clear</button>
+    </div>
+    <div class="find-list" id="findList"></div>
+    <div class="find-foot">
+      <button class="find-more" id="findMore" style="display:none" onclick="runFind(false)">Load more</button>
+      <button class="find-close" onclick="closeFindModal()">Close</button>
     </div>
   </div>
 </div>
@@ -1338,6 +1412,90 @@ async function sendWhatsApp() {
     setProgress(0);
     document.getElementById('waProgress').style.display = 'none';
     toast('Error generating PDF. Try Print/Save instead.');
+  }
+}
+
+// ── Find / list quotations ──
+let findOffset = 0, findTimer = null, findSeq = 0;
+
+function openFindModal() {
+  byId('findOverlay').classList.add('open');
+  runFind(true);
+  setTimeout(() => byId('findQ').focus(), 200);
+}
+
+function closeFindModal(e) {
+  if (!e || e.target === byId('findOverlay')) byId('findOverlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFindModal(); });
+
+function findDebounce() {
+  clearTimeout(findTimer);
+  findTimer = setTimeout(() => runFind(true), 300);
+}
+
+function clearFind() {
+  byId('findQ').value = '';
+  byId('findFrom').value = '';
+  byId('findTo').value = '';
+  runFind(true);
+}
+
+function findRowHtml(r) {
+  const amt = r.grandTotal > 0
+    ? '₹' + Number(r.grandTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '—';
+  const date = String(r.date || '').split('-').reverse().join('-');
+  return `<div class="find-item" onclick="openQuotation(${Number(r.slNo)})">
+    <div class="find-sl">#${Number(r.slNo)}</div>
+    <div class="find-main">
+      <div class="find-name">${esc(r.name)}</div>
+      <div class="find-sub">${esc(date)} · ${esc(r.phone)}</div>
+    </div>
+    <div class="find-amt">${esc(amt)}</div>
+  </div>`;
+}
+
+async function runFind(reset) {
+  const from = byId('findFrom').value, to = byId('findTo').value;
+  if (from && to && from > to) { toast('⚠️ "From" date is after "To" date'); return; }
+  if (reset) findOffset = 0;
+  const seq = ++findSeq;                       // lets us ignore out-of-date responses
+  const list = byId('findList'), more = byId('findMore');
+  if (reset) list.innerHTML = '<div class="find-empty">Searching…</div>';
+  more.style.display = 'none';
+
+  const p = new URLSearchParams({ limit: 25, offset: findOffset });
+  const q = byId('findQ').value.trim();
+  if (q)    p.set('q', q);
+  if (from) p.set('from', from);
+  if (to)   p.set('to', to);
+
+  try {
+    const res = await api('/api/quotations?' + p.toString());
+    if (seq !== findSeq) return;
+    const rowsFound = res.quotations || [];
+    if (reset) list.innerHTML = '';
+    if (reset && !rowsFound.length) list.innerHTML = '<div class="find-empty">No quotations found</div>';
+    list.insertAdjacentHTML('beforeend', rowsFound.map(findRowHtml).join(''));
+    findOffset += rowsFound.length;
+    more.style.display = res.hasMore ? '' : 'none';
+  } catch (e) {
+    if (seq === findSeq) list.innerHTML = `<div class="find-empty">❌ ${esc(e.message)}</div>`;
+  }
+}
+
+async function openQuotation(n) {
+  if (dirty && !confirm(`Load quotation #${n}? Unsaved entries on this page will be replaced.`)) return;
+  try {
+    const rec = await api('/api/quotations/' + n);
+    fillForm(rec);
+    loadedSerial = n;
+    closeFindModal();
+    toast(`📂 Quotation #${n} loaded`);
+  } catch (e) {
+    toast('❌ ' + e.message);
   }
 }
 
