@@ -872,7 +872,7 @@ body {
 const DEFAULT_ITEMS = [
   { p: "SPLIT:HP",     u: "Set",  q: "", r: "", sub: ["","",""] },
   { p: "TYPE / MODEL", u: "",     q: "", r: "" },
-  { p: "Panel Board 3 Phase / Single", u: "No.", q: "", r: "" },
+  { p: "SPLIT:PANEL", u: "No.", q: "", r: "" },
   { p: "Empty PVC BOX",               u: "No",  q: "", r: "" },
   { p: "SPLIT:HDPE",   u: "Mtrs",   q: "", r: "", sub: ["",""] },
   { p: "SPLIT:ISI",    u: "Mtrs",  q: "", r: "", sub: ["",""] },
@@ -955,9 +955,12 @@ function buildParticularsCell(row, idx) {
       <input class="part-sub" style="width:90px"value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter size/spec"/>
       <span class="part-label">ISI HDPE Pipe</span>
-      <input class="part-sub" style="width:127px"value="${esc(sub[2])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:100px"value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter spec"/>
-      <span class="part-label">Kg</span>
+      <span class="part-label">Size</span>
+      <input class="part-sub" style="width:90px"value="${esc(sub[1])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[2]=this.value" title="Enter size/spec"/>
+      <span class="part-label">Kg</span>       
     </div>`;
   }
 
@@ -971,6 +974,13 @@ function buildParticularsCell(row, idx) {
              oninput="rows[${idx}].sub[1]=this.value" title="Enter spec"/>
       <span class="part-label">sqm</span>
     </div>`;
+  }
+
+  if(key === 'PANEL'){
+    return `<div class="part-wrap">
+      <span class="part-label">Panel Board</span>
+      <input class="part-sub" style="width:90px" value="${esc(sub[1])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>`;
   }
 
   // fallback
