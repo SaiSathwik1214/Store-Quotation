@@ -109,17 +109,28 @@ router.get('/quotations', wrap(async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
   const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
   const q = String(req.query.q || '').trim().replace(/[\\%_]/g, '\\$&');
-  const params = [limit, offset];
-  let where = '';
+  const from = String(req.query.from || '');
+  const to = String(req.query.to || '');
+  if ((from && !validDate(from)) || (to && !validDate(to))) {
+    return res.status(400).json({ error: 'Dates must be YYYY-MM-DD' });
+  }
+
+  const params = [limit + 1, offset];          // fetch one extra row to know if more pages exist
+  const conds = [];
   if (q) {
     params.push(`%${q}%`);
-    where = 'WHERE customer_name ILIKE $3 OR customer_phone ILIKE $3 OR sl_no::text ILIKE $3';
+    const i = params.length;
+    conds.push(`(customer_name ILIKE $${i} OR customer_phone ILIKE $${i} OR sl_no::text ILIKE $${i})`);
   }
+  if (from) { params.push(from); conds.push(`quote_date >= $${params.length}::date`); }
+  if (to)   { params.push(to);   conds.push(`quote_date <= $${params.length}::date`); }
+  const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
+
   const { rows } = await pool.query(
     `SELECT sl_no AS "slNo", to_char(quote_date,'YYYY-MM-DD') AS "date", customer_name AS "name",
             customer_phone AS "phone", grand_total::float8 AS "grandTotal"
-       FROM quotations ${where} ORDER BY sl_no DESC LIMIT $1 OFFSET $2`, params);
-  res.json({ quotations: rows });
+       FROM quotations ${where} ORDER BY quote_date DESC, sl_no DESC LIMIT $1 OFFSET $2`, params);
+  res.json({ quotations: rows.slice(0, limit), hasMore: rows.length > limit });
 }));
 
 router.get('/quotations/:slNo', wrap(async (req, res) => {
