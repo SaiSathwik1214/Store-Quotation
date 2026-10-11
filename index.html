@@ -1141,8 +1141,11 @@ function buildParticularsCell(row, idx) {
     // "TYPE / MODEL ___"
     return `<div class="part-wrap">
       <span class="part-label">TYPE / MODEL</span>
-      <input class="part-sub" style="width:220px" value="${esc(sub[0])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[0]=this.value" title="Enter type / model"/>
+      <input class="part-sub" style="width:90px" value="${esc(sub[0])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>
+      <span class="part-label">,</span>
+      <input class="part-sub" style="width:80px" value="${esc(sub[1])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[1]=this.value" title="Enter value"/>
     </div>`;
   }
 
