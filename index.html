@@ -945,7 +945,7 @@ body {
 // ── Default items from physical form ──
 const DEFAULT_ITEMS = [
   { p: "SPLIT:HP",     u: "Set",  q: "", r: "", sub: ["","",""] },
-  { p: "TYPE / MODEL", u: "",     q: "", r: "" },
+  { p: "SPLIT:TYPE",  u: "",     q: "", r: "", sub: ["","",""] },
   { p: "SPLIT:PANEL", u: "No.", q: "", r: "" },
   { p: "Empty PVC BOX",               u: "No",  q: "", r: "" },
   { p: "SPLIT:HDPE",   u: "Mtrs",   q: "", r: "", sub: ["",""] },
@@ -1002,8 +1002,10 @@ function todayStr() {
 
 // Fresh copy of rows; guarantees every SPLIT row has its 3-slot "sub" array
 function normalizeRows(list) {
-  return (Array.isArray(list) && list.length ? list : DEFAULT_ITEMS).map(x => {
+  return (Array.isArray(list) && list.length ? list : DEFAULT_ITEMS).map((x, i) => {
     const r = { p: x.p || '', u: x.u || '', q: x.q ?? '', r: x.r ?? '' };
+    // older quotations: row 2 still holds the plain "TYPE / MODEL" label -> show it with the new input
+    if (i === 1 && r.p.trim().toUpperCase() === 'TYPE / MODEL') r.p = 'SPLIT:TYPE';
     if (r.p.startsWith('SPLIT:')) {
       const s = Array.isArray(x.sub) ? x.sub : [];
       r.sub = [s[0] || '', s[1] || '', s[2] || ''];
@@ -1135,11 +1137,28 @@ function buildParticularsCell(row, idx) {
     </div>`;
   }
 
-  if(key === 'PANEL'){
+  if (key === 'TYPE') {
+    // "TYPE / MODEL ___"
+    return `<div class="part-wrap">
+      <span class="part-label">TYPE / MODEL</span>
+      <input class="part-sub" style="width:220px" value="${esc(sub[0])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[0]=this.value" title="Enter type / model"/>
+    </div>`;
+  }
+
+  if (key === 'PANEL') {
+    // "Panel Board ___ , ___ , ___"
     return `<div class="part-wrap">
       <span class="part-label">Panel Board</span>
       <input class="part-sub" style="width:90px" value="${esc(sub[0])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>`;
+             oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>
+      <span class="part-label">,</span>
+      <input class="part-sub" style="width:80px" value="${esc(sub[1])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[1]=this.value" title="Enter value"/>
+      <span class="part-label">,</span>
+      <input class="part-sub" style="width:80px" value="${esc(sub[2])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[2]=this.value" title="Enter value"/>
+    </div>`;
   }
 
   // fallback
