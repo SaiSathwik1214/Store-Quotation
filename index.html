@@ -129,7 +129,7 @@ body {
 .find-overlay.open { display: flex; }
 .find-modal {
   background: #fff; border-radius: 10px; padding: 22px 20px 18px;
-  width: 94%; max-width: 600px; max-height: 86vh;
+  width: 94%; max-width: 680px; max-height: 86vh;
   display: flex; flex-direction: column;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   font-family: 'Source Sans 3', sans-serif;
@@ -159,7 +159,8 @@ body {
 .find-sl { font-weight: 800; color: #cc0000; min-width: 44px; }
 .find-main { flex: 1; min-width: 0; }
 .find-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.find-sub { font-size: 12px; color: #666; }
+.find-sub { font-size: 12px; color: #444; line-height: 1.5; }
+.find-k { color: #888; }
 .find-amt { font-weight: 700; white-space: nowrap; }
 .find-empty { padding: 22px 12px; text-align: center; color: #888; font-size: 13px; }
 .find-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
@@ -911,8 +912,8 @@ body {
     <div class="terms-col">
       <h4>Terms &amp; Conditions</h4><br>
       <ol>
-        <li><strong>100% Payment against Delivery</strong></li><br>
-        <li><strong>Valid From 7 days</strong></li>
+        <li>100% Payment against Delivery</li><br>
+        <li>Valid From 7 days</li>
       </ol>
     </div>
     <div class="qr-col">
@@ -1104,7 +1105,7 @@ function buildParticularsCell(row, idx) {
       <input class="part-sub" style="width:52px" value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter Stages value"/>
       <span class="part-label">Stages</span>
-      <input class="part-sub" style="width:100px" value="${esc(sub[2])}" placeholder="&nbsp;"
+      <input class="part-sub" style="width:52px" value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[2]=this.value" title="Enter Phase"/>
       <span class="part-label">Phase</span>
     </div>`;
@@ -1138,28 +1139,27 @@ function buildParticularsCell(row, idx) {
   }
 
   if (key === 'TYPE') {
-    // "TYPE / MODEL ___"
+    // "TYPE / MODEL ______ ______"  (two equal lines)
     return `<div class="part-wrap">
       <span class="part-label">TYPE / MODEL</span>
-      <input class="part-sub" style="width:100px" value="${esc(sub[0])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>
-      <span class="part-label">,</span>
-      <input class="part-sub" style="width:100px" value="${esc(sub[1])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[1]=this.value" title="Enter value"/>
+      <input class="part-sub" style="flex:1 1 0;min-width:60px" value="${esc(sub[0])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[0]=this.value" title="Enter type / model"/>
+      <input class="part-sub" style="flex:1 1 0;min-width:60px;margin-left:12px" value="${esc(sub[1])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[1]=this.value" title="Enter type / model (second line)"/>
     </div>`;
   }
 
   if (key === 'PANEL') {
-    // "Panel Board ___ , ___ , ___"
+    // "Panel Board ______ , ______ , ______"  (three equal lines filling the cell)
     return `<div class="part-wrap">
       <span class="part-label">Panel Board</span>
-      <input class="part-sub" style="width:90px" value="${esc(sub[0])}" placeholder="&nbsp;"
+      <input class="part-sub" style="flex:1 1 0;min-width:60px" value="${esc(sub[0])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter size"/>
       <span class="part-label">,</span>
-      <input class="part-sub" style="width:80px" value="${esc(sub[1])}" placeholder="&nbsp;"
+      <input class="part-sub" style="flex:1 1 0;min-width:60px" value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter value"/>
       <span class="part-label">,</span>
-      <input class="part-sub" style="width:130px" value="${esc(sub[2])}" placeholder="&nbsp;"
+      <input class="part-sub" style="flex:1 1 0;min-width:60px" value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[2]=this.value" title="Enter value"/>
     </div>`;
   }
@@ -1469,11 +1469,16 @@ function findRowHtml(r) {
     ? '₹' + Number(r.grandTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : '—';
   const date = String(r.date || '').split('-').reverse().join('-');
+  const bits = [esc(date), esc(r.phone)];
+  const tag = (label, v) => `<span class="find-k">${label}</span> ${esc(v)}`;
+  if (r.typeModel)  bits.push(tag('Type/Model:', r.typeModel));
+  if (r.totalFeet)  bits.push(tag('Total Feet:', r.totalFeet));
+  if (r.quotedFeet) bits.push(tag('Quoted Feet:', r.quotedFeet));
   return `<div class="find-item" onclick="openQuotation(${Number(r.slNo)})">
     <div class="find-sl">#${Number(r.slNo)}</div>
     <div class="find-main">
       <div class="find-name">${esc(r.name)}</div>
-      <div class="find-sub">${esc(date)} · ${esc(r.phone)}</div>
+      <div class="find-sub">${bits.join(' · ')}</div>
     </div>
     <div class="find-amt">${esc(amt)}</div>
   </div>`;
