@@ -128,7 +128,13 @@ router.get('/quotations', wrap(async (req, res) => {
 
   const { rows } = await pool.query(
     `SELECT sl_no AS "slNo", to_char(quote_date,'YYYY-MM-DD') AS "date", customer_name AS "name",
-            customer_phone AS "phone", grand_total::float8 AS "grandTotal"
+            customer_phone AS "phone", total_feet AS "totalFeet", quoted_feet AS "quotedFeet",
+            COALESCE(
+              NULLIF(btrim(items->1->'sub'->>0), ''),
+              CASE WHEN items->1->>'p' NOT LIKE 'SPLIT:%' AND upper(btrim(items->1->>'p')) <> 'TYPE / MODEL'
+                   THEN NULLIF(btrim(items->1->>'p'), '') END
+            ) AS "typeModel",
+            grand_total::float8 AS "grandTotal"
        FROM quotations ${where} ORDER BY quote_date DESC, sl_no DESC LIMIT $1 OFFSET $2`, params);
   res.json({ quotations: rows.slice(0, limit), hasMore: rows.length > limit });
 }));
