@@ -105,6 +105,13 @@ router.get('/quotations/next-serial', wrap(async (req, res) => {
   res.json({ nextSerial: Number(rows[0].next) });
 }));
 
+// "Type / Model" is the 2nd table row (items[1]); the page keeps its two lines in sub[0] / sub[1].
+// Older quotations stored free text in "p" instead, so that text is used when it isn't the default label.
+const LEGACY_MODEL = `CASE WHEN items->1->>'p' NOT LIKE 'SPLIT:%' AND upper(btrim(items->1->>'p')) <> 'TYPE / MODEL'
+                      THEN NULLIF(btrim(items->1->>'p'), '') END`;
+const MODEL_PREVIEW = `COALESCE(NULLIF(btrim(items->1->'sub'->>0), ''), ${LEGACY_MODEL})`;
+const MODEL_SEARCH  = `concat_ws(' ', items->1->'sub'->>0, items->1->'sub'->>1, ${LEGACY_MODEL})`;
+
 router.get('/quotations', wrap(async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
   const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
@@ -120,7 +127,8 @@ router.get('/quotations', wrap(async (req, res) => {
   if (q) {
     params.push(`%${q}%`);
     const i = params.length;
-    conds.push(`(customer_name ILIKE $${i} OR customer_phone ILIKE $${i} OR sl_no::text ILIKE $${i})`);
+    conds.push(`(customer_name ILIKE $${i} OR customer_phone ILIKE $${i} OR sl_no::text ILIKE $${i}
+                  OR ${MODEL_SEARCH} ILIKE $${i})`);
   }
   if (from) { params.push(from); conds.push(`quote_date >= $${params.length}::date`); }
   if (to)   { params.push(to);   conds.push(`quote_date <= $${params.length}::date`); }
@@ -129,13 +137,9 @@ router.get('/quotations', wrap(async (req, res) => {
   const { rows } = await pool.query(
     `SELECT sl_no AS "slNo", to_char(quote_date,'YYYY-MM-DD') AS "date", customer_name AS "name",
             customer_phone AS "phone", total_feet AS "totalFeet", quoted_feet AS "quotedFeet",
-            COALESCE(
-              NULLIF(btrim(items->1->'sub'->>0), ''),
-              CASE WHEN items->1->>'p' NOT LIKE 'SPLIT:%' AND upper(btrim(items->1->>'p')) <> 'TYPE / MODEL'
-                   THEN NULLIF(btrim(items->1->>'p'), '') END
-            ) AS "typeModel",
+            ${MODEL_PREVIEW} AS "typeModel",
             grand_total::float8 AS "grandTotal"
-       FROM quotations ${where} ORDER BY quote_date DESC, sl_no DESC LIMIT $1 OFFSET $2`, params);
+       FROM quotations ${where} ORDER BY sl_no DESC LIMIT $1 OFFSET $2`, params);
   res.json({ quotations: rows.slice(0, limit), hasMore: rows.length > limit });
 }));
 
