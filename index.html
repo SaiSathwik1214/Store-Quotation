@@ -955,7 +955,7 @@ body {
 // ── Default items from physical form ──
 const DEFAULT_ITEMS = [
   { p: "SPLIT:HP",     u: "Set",  q: "", r: "", sub: ["","",""] },
-  // { p: "SPLIT:TYPE",  u: "",     q: "", r: "", sub: ["","",""] },
+  { p: "SPLIT:TYPE",  u: "",     q: "", r: "", sub: ["","",""] },
   { p: "SPLIT:PANEL", u: "No.", q: "", r: "" },
   { p: "Empty PVC BOX",               u: "No",  q: "", r: "" },
   { p: "SPLIT:HDPE",   u: "Mtrs",   q: "", r: "", sub: ["",""] },
@@ -1134,11 +1134,7 @@ function buildParticularsCell(row, idx) {
       <input class="part-sub" style="width:80px" value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[2]=this.value" title="Enter Phase"/>
       <span class="part-label">Phase</span>
-      <span class="part-label">TYPE / MODEL</span>
-      <input class="part-sub" style="flex:1 1 0;min-width:60px" value="${esc(sub[3])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[3]=this.value" title="Enter type / model"/>
-      <input class="part-sub" style="flex:1 1 0;min-width:60px;margin-left:12px" value="${esc(sub[4])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[4]=this.value" title="Enter type / model (second line)"/>
+      
     </div>`;
   }
 
