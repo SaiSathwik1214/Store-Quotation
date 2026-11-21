@@ -954,8 +954,7 @@ body {
 <script>
 // ── Default items from physical form ──
 const DEFAULT_ITEMS = [
-  { p: "SPLIT:HP",     u: "Set",  q: "", r: "", sub: ["","",""] },
-  { p: "SPLIT:TYPE",  u: "",     q: "", r: "", sub: ["","",""] },
+  { p: "SPLIT:HP",     u: "Set",  q: "", r: "", sub: ["","","","",""] },
   { p: "SPLIT:PANEL", u: "No.", q: "", r: "" },
   { p: "Empty PVC BOX",               u: "No",  q: "", r: "" },
   { p: "SPLIT:HDPE",   u: "Mtrs",   q: "", r: "", sub: ["",""] },
@@ -1003,21 +1002,57 @@ async function api(path, opts = {}) {
 let loadedSerial = null;   // Sl.No. of the record currently loaded from the database (null = new quotation)
 let shownSerial  = null;   // last Sl.No. shown in the field
 let dirty = false;         // unsaved edits on the page
+let loadedInfo = '';       // date / name / address / phone as they were when the quotation was loaded or last saved
+
+// Snapshot of the four "customer details" fields (same normalisation as collectForm)
+function custInfo() {
+  return [
+    byId('qDate').value,
+    byId('custName').value.trim(),
+    byId('custAddr').value.trim(),
+    byId('custPhone').value.trim().replace(/\s+/g, '')
+  ].join('\u0001');
+}
 
 function todayStr() {
   const t = new Date();
   return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
 }
 
-// Fresh copy of rows; guarantees every SPLIT row has its 3-slot "sub" array
+// Fresh copy of rows; guarantees every SPLIT row has its "sub" slots
+// (H.P. row: 5 = H.P., Stages, Phase, Type/Model line 1, Type/Model line 2; other split rows: 3)
 function normalizeRows(list) {
-  return (Array.isArray(list) && list.length ? list : DEFAULT_ITEMS).map((x, i) => {
+  const src = (Array.isArray(list) && list.length ? list : DEFAULT_ITEMS).map(x => ({ ...x }));
+
+  // Older quotations kept "TYPE / MODEL" as a separate 2nd row -> merge it into the H.P. row
+  const first = src[0], second = src[1];
+  const secondP = String((second && second.p) || '');
+  if (first && first.p === 'SPLIT:HP' && second &&
+      (secondP === 'SPLIT:TYPE' || !secondP.startsWith('SPLIT:'))) {
+    let m1 = '', m2 = '';
+    if (secondP === 'SPLIT:TYPE') {
+      const s = Array.isArray(second.sub) ? second.sub : [];
+      m1 = s[0] || ''; m2 = s[1] || '';
+    } else if (secondP.trim().toUpperCase() !== 'TYPE / MODEL') {
+      m1 = secondP;                                   // free text typed in the old plain row
+    }
+    const hasValues = String(second.q ?? '').trim() !== '' || String(second.r ?? '').trim() !== '';
+    if (hasValues) {
+      // that row carried a quantity / rate: keep it as a normal row so the total never changes
+      second.p = ['Type / Model', m1, m2].filter(Boolean).join(' ');
+    } else {
+      const s = Array.isArray(first.sub) ? first.sub : [];
+      first.sub = [s[0] || '', s[1] || '', s[2] || '', m1, m2];
+      src.splice(1, 1);
+    }
+  }
+
+  return src.map(x => {
     const r = { p: x.p || '', u: x.u || '', q: x.q ?? '', r: x.r ?? '' };
-    // older quotations: row 2 still holds the plain "TYPE / MODEL" label -> show it with the new input
-    if (i === 1 && r.p.trim().toUpperCase() === 'TYPE / MODEL') r.p = 'SPLIT:TYPE';
     if (r.p.startsWith('SPLIT:')) {
       const s = Array.isArray(x.sub) ? x.sub : [];
-      r.sub = [s[0] || '', s[1] || '', s[2] || ''];
+      const n = r.p === 'SPLIT:HP' ? 5 : 3;
+      r.sub = Array.from({ length: n }, (_, k) => s[k] || '');
     }
     return r;
   });
@@ -1047,6 +1082,7 @@ function fillForm(d) {
   rows = normalizeRows(d.items);
   renderRows();
   shownSerial = d.slNo;
+  loadedInfo = custInfo();
   dirty = false;
 }
 
@@ -1120,10 +1156,10 @@ function buildParticularsCell(row, idx) {
   }
 
   const key = row.p.split(':')[1];
-  const sub = row.sub || ['','',''];
+  const sub = row.sub || ['','','','',''];
 
   if (key === 'HP') {
-    // "H.P. ___ Stages ___ Phase"
+    // "H.P. ___ Stages ___ Phase" + 2nd line "TYPE / MODEL ___ ___"
     return `<div class="part-wrap">
       <input class="part-sub" style="width:52px" value="${esc(sub[0])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[0]=this.value" title="Enter H.P. value"/>
@@ -1134,7 +1170,13 @@ function buildParticularsCell(row, idx) {
       <input class="part-sub" style="width:80px" value="${esc(sub[2])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[2]=this.value" title="Enter Phase"/>
       <span class="part-label">Phase</span>
-      
+    </div>
+    <div class="part-wrap" style="padding-top:0">
+      <span class="part-label">TYPE / MODEL</span>
+      <input class="part-sub" style="flex:1 1 0;min-width:60px" value="${esc(sub[3])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[3]=this.value" title="Enter type / model"/>
+      <input class="part-sub" style="flex:1 1 0;min-width:60px;margin-left:12px" value="${esc(sub[4])}" placeholder="&nbsp;"
+             oninput="rows[${idx}].sub[4]=this.value" title="Enter type / model (second line)"/>
     </div>`;
   }
 
@@ -1162,17 +1204,6 @@ function buildParticularsCell(row, idx) {
       <input class="part-sub" style="width:80px" value="${esc(sub[1])}" placeholder="&nbsp;"
              oninput="rows[${idx}].sub[1]=this.value" title="Enter spec"/>
       <span class="part-label">sqm</span>
-    </div>`;
-  }
-
-  if (key === 'TYPE') {
-    // "TYPE / MODEL ______ ______"  (two equal lines)
-    return `<div class="part-wrap">
-      <span class="part-label">TYPE / MODEL</span>
-      <input class="part-sub" style="flex:1 1 0;min-width:60px" value="${esc(sub[0])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[0]=this.value" title="Enter type / model"/>
-      <input class="part-sub" style="flex:1 1 0;min-width:60px;margin-left:12px" value="${esc(sub[1])}" placeholder="&nbsp;"
-             oninput="rows[${idx}].sub[1]=this.value" title="Enter type / model (second line)"/>
     </div>`;
   }
 
@@ -1280,7 +1311,17 @@ async function saveForm() {
   btn.innerHTML = '⏳ Saving...';
 
   // ── 1) Save to the database ──
+  let oldSerial = null;   // set when an old quotation was edited and is saved as a NEW one
   try {
+    // Date / name / address / phone changed on an old quotation -> save as a NEW quotation
+    // with the next Sl.No.; the old quotation stays exactly as it was.
+    if (loadedSerial !== null && d.slNo === loadedSerial && custInfo() !== loadedInfo) {
+      const { nextSerial } = await api('/api/quotations/next-serial');
+      oldSerial = loadedSerial;
+      d.slNo = nextSerial;
+      byId('slNo').value = nextSerial;
+      loadedSerial = null;
+    }
     if (loadedSerial === d.slNo) {
       await api('/api/quotations/' + d.slNo, { method: 'PUT', body: JSON.stringify(d) });
     } else {
@@ -1288,6 +1329,7 @@ async function saveForm() {
       loadedSerial = d.slNo;
     }
     shownSerial = d.slNo;
+    loadedInfo = custInfo();
     dirty = false;
   } catch (e) {
     btn.disabled = false;
@@ -1325,11 +1367,11 @@ async function saveForm() {
       margin:      [6, 6, 6, 6],
       filename:    fileName,
       image:       { type: 'jpeg', quality: 0.97 },
-      html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+      html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', onclone: pdfDateFix },
       jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
     }).from(document.querySelector('.paper')).save();
 
-    toast(`✅ Quotation #${d.slNo} saved & PDF "${fileName}" — move it to D:\\Quotations`);
+    toast(`✅ Quotation #${d.slNo} saved${oldSerial ? ` as new (#${oldSerial} unchanged)` : ''} & PDF "${fileName}" — move it to D:\\Quotations`);
     setTimeout(() => toast('📁 Remember: Move the PDF from Downloads → D:\\Quotations'), 3500);
   } catch (err) {
     console.error(err);
@@ -1359,6 +1401,14 @@ function toast(msg) {
   el.classList.add('show');
   clearTimeout(el._t);
   el._t = setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+const fmtDMY = s => String(s || '').split('-').reverse().join('-');
+
+// html2canvas draws a date <input> as YYYY-MM-DD; in the PDF copy only, show DD-MM-YYYY
+function pdfDateFix(doc) {
+  const real = byId('qDate').value;
+  doc.querySelectorAll('.date-input').forEach(el => { el.type = 'text'; el.value = fmtDMY(real); });
 }
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -1410,7 +1460,7 @@ async function sendWhatsApp() {
   const date    = document.getElementById('qDate').value || '';
   const total   = document.getElementById('grandTotal').textContent;
   const msg = encodeURIComponent(
-    `Hello ${name},\n\nPlease find attached your Quotation${slNo ? ' #' + slNo : ''}${date ? ' dated ' + date : ''} from *Sri Rohit Motors & Electricals*.\n\nTotal Amount: *${total}*\n\nFor any queries, call us at 98491 86536.\n\nThank you! 🙏`
+    `Hello ${name},\n\nPlease find attached your Quotation${slNo ? ' #' + slNo : ''}${date ? ' dated ' + fmtDMY(date) : ''} from *Sri Rohit Motors & Electricals*.\n\nTotal Amount: *${total}*\n\nFor any queries, call us at 98491 86536.\n\nThank you! 🙏`
   );
 
   try {
@@ -1433,7 +1483,7 @@ async function sendWhatsApp() {
       margin:      [8, 8, 8, 8],
       filename:    `${slLabel}.pdf`,
       image:       { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
+      html2canvas: { scale: 2, useCORS: true, logging: false, onclone: pdfDateFix },
       jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
