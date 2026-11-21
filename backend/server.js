@@ -68,7 +68,7 @@ function validate(b, slNo) {
 
   const items = b.items.map(it => {
     const row = { p: clean(it?.p, 300), u: clean(it?.u, 20), q: clean(it?.q, 30), r: clean(it?.r, 30) };
-    if (Array.isArray(it?.sub)) row.sub = it.sub.slice(0, 3).map(s => clean(s, 60));
+    if (Array.isArray(it?.sub)) row.sub = it.sub.slice(0, 5).map(s => clean(s, 60));   // H.P. row: HP, Stages, Phase, Type/Model x2
     return row;
   });
   const total = items.reduce((s, it) => s + (parseFloat(it.q) || 0) * (parseFloat(it.r) || 0), 0);
@@ -105,12 +105,19 @@ router.get('/quotations/next-serial', wrap(async (req, res) => {
   res.json({ nextSerial: Number(rows[0].next) });
 }));
 
-// "Type / Model" is the 2nd table row (items[1]); the page keeps its two lines in sub[0] / sub[1].
-// Older quotations stored free text in "p" instead, so that text is used when it isn't the default label.
+// "Type / Model" now lives in the 1st table row (items[0]); the page keeps its two lines in sub[3] / sub[4].
+// Older quotations kept it in the 2nd row (items[1]): either as sub[0] / sub[1] of a 'SPLIT:TYPE' row,
+// or as free text in "p" when it isn't the default label. Both are still read so old records keep working.
+const OLD_TYPE_ROW = `items->1->>'p' = 'SPLIT:TYPE'`;
 const LEGACY_MODEL = `CASE WHEN items->1->>'p' NOT LIKE 'SPLIT:%' AND upper(btrim(items->1->>'p')) <> 'TYPE / MODEL'
                       THEN NULLIF(btrim(items->1->>'p'), '') END`;
-const MODEL_PREVIEW = `COALESCE(NULLIF(btrim(items->1->'sub'->>0), ''), ${LEGACY_MODEL})`;
-const MODEL_SEARCH  = `concat_ws(' ', items->1->'sub'->>0, items->1->'sub'->>1, ${LEGACY_MODEL})`;
+const MODEL_PREVIEW = `COALESCE(NULLIF(btrim(items->0->'sub'->>3), ''),
+                                CASE WHEN ${OLD_TYPE_ROW} THEN NULLIF(btrim(items->1->'sub'->>0), '') END,
+                                ${LEGACY_MODEL})`;
+const MODEL_SEARCH  = `concat_ws(' ', items->0->'sub'->>3, items->0->'sub'->>4,
+                                 CASE WHEN ${OLD_TYPE_ROW} THEN items->1->'sub'->>0 END,
+                                 CASE WHEN ${OLD_TYPE_ROW} THEN items->1->'sub'->>1 END,
+                                 ${LEGACY_MODEL})`;
 
 router.get('/quotations', wrap(async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
